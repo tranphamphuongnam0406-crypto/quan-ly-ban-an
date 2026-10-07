@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quản lý bàn & Menu</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f4ef;--card:#fff;--tx:#1f2421;--mut:#6b726d;--bd:#e3ded3;--pri:#c2410c;--pri2:#fff;
+--free:#15803d;--freeb:#dcfce7;--occ:#b91c1c;--occb:#fee2e2;--res:#a16207;--resb:#fef3c7}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171917;--card:#222522;--tx:#eceee9;--mut:#9aa19b;--bd:#343834;--pri:#fb923c;--pri2:#1a1a1a;
+--free:#4ade80;--freeb:#14301e;--occ:#f87171;--occb:#3b1a1a;--res:#fbbf24;--resb:#3a2f10}}
+:root[data-theme="dark"]{--bg:#171917;--card:#222522;--tx:#eceee9;--mut:#9aa19b;--bd:#343834;--pri:#fb923c;--pri2:#1a1a1a;--free:#4ade80;--freeb:#14301e;--occ:#f87171;--occb:#3b1a1a;--res:#fbbf24;--resb:#3a2f10}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--bd);background:var(--card)}
+h1{font-size:18px;margin:0;margin-right:auto}
+.tabs{display:flex;gap:6px}
+button,input,select{font:inherit;color:inherit}
+.tab{border:1px solid var(--bd);background:transparent;padding:7px 14px;border-radius:999px;cursor:pointer}
+.tab.on{background:var(--pri);color:var(--pri2);border-color:var(--pri)}
+main{max-width:1000px;margin:0 auto;padding:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:20px}.stat span{color:var(--mut);font-size:12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.bar input,.bar select,.f input,.f select{padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}
+.btn{background:var(--pri);color:var(--pri2);border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd);font-weight:500}
+.btn.d{background:var(--occ);color:var(--pri2)}
+.btn.s{padding:4px 9px;font-size:13px}
+.chip{border:1px solid var(--bd);background:transparent;border-radius:999px;padding:5px 12px;cursor:pointer;font-size:13px}
+.chip.on{background:var(--tx);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tb{background:var(--card);border:2px solid var(--bd);border-radius:14px;padding:12px;cursor:pointer;text-align:left}
+.tb:hover{transform:translateY(-2px)}
+.tb h3{margin:0 0 2px;font-size:17px}.tb small{color:var(--mut);display:block}
+.tb.free{border-color:var(--free)}.tb.occupied{border-color:var(--occ);background:var(--occb)}.tb.reserved{border-color:var(--res);background:var(--resb)}
+.badge{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+.free .badge{background:var(--freeb);color:var(--free)}.occupied .badge{background:var(--occ);color:var(--pri2)}.reserved .badge{background:var(--res);color:var(--pri2)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--bd)}th{font-size:12px;color:var(--mut);text-transform:uppercase}
+.wrap{overflow-x:auto}
+.off{opacity:.5}
+dialog{border:1px solid var(--bd);border-radius:16px;background:var(--card);color:var(--tx);padding:0;width:min(560px,94vw);max-height:90vh}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.dc{padding:18px}.dc h2{margin:0 0 12px;font-size:18px}
+.f{display:grid;gap:10px;margin-bottom:14px}.f label{display:grid;gap:3px;font-size:13px;color:var(--mut)}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px}
+.mn{max-height:190px;overflow:auto;border:1px solid var(--bd);border-radius:10px}
+.li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--bd)}
+.li:last-child{border:0}.li span{flex:1}
+.q{display:flex;align-items:center;gap:6px}
+.tot{display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:10px}
+.mut{color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍽️ Quản lý bàn & Menu</h1>
+  <div class="tabs">
+    <button class="tab on" data-v="tables" onclick="setView('tables')">Sơ đồ bàn</button>
+    <button class="tab" data-v="menu" onclick="setView('menu')">Danh mục món</button>
+  </div>
+</header>
+<main id="app"></main>
+<dialog id="dlg"><div class="dc" id="dlgc"></div></dialog>
+
+<script>
+const CATS=['Khai vị','Món chính','Đồ uống','Tráng miệng'];
+const $=s=>document.querySelector(s);
+const fmt=n=>Number(n).toLocaleString('vi-VN')+'đ';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const STATUS={free:'Trống',occupied:'Có khách',reserved:'Đã đặt'};
+
+function seed(){
+  const t=[];
+  for(let i=1;i<=12;i++)t.push({id:uid()+i,name:'Bàn '+i,area:i<=8?'Tầng 1':'Tầng 2',seats:i%3==0?6:(i%2?2:4),status:'free',guest:'',guests:0,order:[],since:null});
+  const m=[['Gỏi cuốn tôm thịt','Khai vị',45000],['Chả giò','Khai vị',50000],['Cơm tấm sườn','Món chính',65000],['Phở bò tái','Món chính',70000],['Bún chả','Món chính',68000],['Lẩu thái hải sản','Món chính',320000],['Cà phê sữa đá','Đồ uống',29000],['Trà đào cam sả','Đồ uống',39000],['Nước cam ép','Đồ uống',35000],['Chè khúc bạch','Tráng miệng',32000],['Bánh flan','Tráng miệng',25000]]
+   .map(x=>({id:uid(),name:x[0],cat:x[1],price:x[2],avail:true}));
+  return{tables:t,menu:m,history:[]};
+}
+let S=load()||seed();
+function load(){try{const d=JSON.parse(localStorage.getItem('rm_tables_v1'));return d&&d.tables?d:null}catch(e){return null}}
+function save(){try{localStorage.setItem('rm_tables_v1',JSON.stringify(S))}catch(e){}}
+
+let view='tables',fStatus='all',fArea='all',mSearch='',mCat='all',oCat='all';
+const T=id=>S.tables.find(t=>t.id===id), M=id=>S.menu.find(m=>m.id===id);
+const total=t=>t.order.reduce((s,o)=>s+(M(o.id)?M(o.id).price*o.qty:0),0);
+const hhmm=ts=>ts?new Date(ts).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'';
+
+function setView(v){view=v;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.v===v));render()}
+function render(){view==='tables'?renderTables():renderMenu()}
+
+function renderTables(){
+  const c={free:0,occupied:0,reserved:0};S.tables.forEach(t=>c[t.status]++);
+  const today=new Date().toDateString();
+  const rev=S.history.filter(h=>new Date(h.time).toDateString()===today).reduce((s,h)=>s+h.total,0);
+  const areas=[...new Set(S.tables.map(t=>t.area))];
+  const list=S.tables.filter(t=>(fStatus==='all'||t.status===fStatus)&&(fArea==='all'||t.area===fArea));
+  $('#app').innerHTML=`
+  <div class="stats">
+    <div class="stat"><b style="color:var(--free)">${c.free}</b><span>Bàn trống</span></div>
+    <div class="stat"><b style="color:var(--occ)">${c.occupied}</b><span>Có khách</span></div>
+    <div class="stat"><b style="color:var(--res)">${c.reserved}</b><span>Đã đặt trước</span></div>
+    <div class="stat"><b>${fmt(rev)}</b><span>Doanh thu hôm nay</span></div>
+  </div>
+  <div class="bar">
+    ${['all','free','occupied','reserved'].map(s=>`<button class="chip ${fStatus===s?'on':''}" onclick="fStatus='${s}';render()">${s==='all'?'Tất cả':STATUS[s]}</button>`).join('')}
+    <select onchange="fArea=this.value;render()"><option value="all">Mọi khu vực</option>${areas.map(a=>`<option ${fArea===a?'selected':''}>${esc(a)}</option>`).join('')}</select>
+    <button class="btn" style="margin-left:auto" onclick="tableForm()">+ Thêm bàn</button>
+  </div>
+  <div class="grid">${list.map(t=>`
+    <button class="tb ${t.status}" onclick="openTable('${t.id}')">
+      <h3>${esc(t.name)}</h3><small>${esc(t.area)} · ${t.seats} chỗ</small>
+      ${t.status!=='free'?`<small>${esc(t.guest||'Khách lẻ')} · ${t.guests} người</small>`:''}
+      ${t.status==='occupied'?`<small>Từ ${hhmm(t.since)} · <b>${fmt(total(t))}</b></small>`:''}
+      <span class="badge">${STATUS[t.status]}</span>
+    </button>`).join('')||'<p class="mut">Không có bàn phù hợp.</p>'}</div>`;
+}
+
+/* ---------- Dialog ---------- */
+function show(h){$('#dlgc').innerHTML=h;const d=$('#dlg');if(!d.open)d.showModal()}
+function closeDlg(){$('#dlg').close()}
+
+function openTable(id){
+  const t=T(id);let h=`<h2>${esc(t.name)} <span class="mut" style="font-size:13px;font-weight:400">· ${esc(t.area)} · ${t.seats} chỗ</span></h2>`;
+  if(t.status==='free'){
+    h+=`<div class="f">
+      <label>Tên khách<input id="g_name" placeholder="Khách lẻ"></label>
+      <label>Số người<input id="g_n" type="number" min="1" max="${t.seats}" value="2"></label></div>
+    <div class="row">
+      <button class="btn g s" onclick="tableForm('${id}')">Sửa bàn</button>
+      <button class="btn d s" onclick="delTable('${id}')">Xóa bàn</button>
+      <button class="btn g" onclick="act('${id}','reserved')">Đặt trước</button>
+      <button class="btn" onclick="act('${id}','occupied')">Nhận bàn</button></div>`;
+  }else if(t.status==='reserved'){
+    h+=`<p>Đặt trước: <b>${esc(t.guest||'Khách lẻ')}</b> · ${t.guests} người</p>
+    <div class="row"><button class="btn g" onclick="cancelRes('${id}')">Hủy đặt</button>
+    <button class="btn" onclick="checkIn('${id}')">Khách đến - Nhận bàn</button></div>`;
+  }else{
+    const items=S.menu.filter(m=>m.avail&&(oCat==='all'||m.cat===oCat));
+    h+=`<p class="mut" style="margin-top:-6px">${esc(t.guest||'Khách lẻ')} · ${t.guests} người · từ ${hhmm(t.since)}</p>
+    <div class="bar" style="margin-bottom:8px">${['all',...CATS].map(c=>`<button class="chip ${oCat===c?'on':''}" onclick="oCat='${c}';openTable('${id}')">${c==='all'?'Tất cả':c}</button>`).join('')}</div>
+    <div class="mn">${items.map(m=>`<div class="li"><span>${esc(m.name)}</span><b>${fmt(m.price)}</b><button class="btn s" onclick="addItem('${id}','${m.id}',1)">+</button></div>`).join('')}</div>
+    <h3 style="margin:14px 0 6px;font-size:15px">Món đã gọi</h3>
+    <div class="mn">${t.order.length?t.order.map(o=>{const m=M(o.id);return m?`<div class="li"><span>${esc(m.name)}</span><div class="q"><button class="btn g s" onclick="addItem('${id}','${o.id}',-1)">−</button><b>${o.qty}</b><button class="btn g s" onclick="addItem('${id}','${o.id}',1)">+</button></div><b style="min-width:84px;text-align:right">${fmt(m.price*o.qty)}</b></div>`:''}).join(''):'<div class="li mut">Chưa gọi món nào</div>'}</div>
+    <div class="tot"><span>Tổng cộng</span><span>${fmt(total(t))}</span></div>
+    <div class="row"><button class="btn g" onclick="cancelTable('${id}')">Hủy bàn</button><button class="btn" onclick="pay('${id}')">Thanh toán & trả bàn</button></div>`;
+  }
+  h+=`<div class="row" style="margin-top:6px"><button class="btn g s" onclick="closeDlg()">Đóng</button></div>`;
+  show(h);
+}
+function act(id,st){
+  const t=T(id);const name=$('#g_name').value.trim();const n=Math.max(1,parseInt($('#g_n').value)||1);
+  if(n>t.seats&&!confirm(`Số người (${n}) vượt quá số chỗ (${t.seats}). Vẫn tiếp tục?`))return;
+  Object.assign(t,{status:st,guest:name,guests:n,order:[],since:st==='occupied'?Date.now():null});
+  save();render();st==='occupied'?openTable(id):closeDlg();
+}
+function checkIn(id){const t=T(id);t.status='occupied';t.since=Date.now();save();render();openTable(id)}
+function reset(t){Object.assign(t,{status:'free',guest:'',guests:0,order:[],since:null})}
+function cancelRes(id){reset(T(id));save();render();closeDlg()}
+function cancelTable(id){if(!confirm('Hủy bàn và xóa các món đã gọi?'))return;reset(T(id));save();render();closeDlg()}
+function addItem(tid,mid,d){
+  const t=T(tid);let o=t.order.find(x=>x.id===mid);
+  if(!o){if(d>0)t.order.push({id:mid,qty:d})}else{o.qty+=d;if(o.qty<=0)t.order=t.order.filter(x=>x!==o)}
+  save();render();openTable(tid);
+}
+function pay(id){
+  const t=T(id);const sum=total(t);
+  if(!t.order.length&&!confirm('Bàn chưa gọi món. Vẫn trả bàn?'))return;
+  if(sum>0)S.history.push({table:t.name,total:sum,time:Date.now()});
+  reset(t);save();render();
+  show(`<h2>Đã thanh toán</h2><p>Tổng tiền: <b>${fmt(sum)}</b>. Bàn đã được trả về trạng thái trống.</p><div class="row"><button class="btn" onclick="closeDlg()">Xong</button></div>`);
+}
+
+/* ---------- Table form ---------- */
+function tableForm(id){
+  const t=id?T(id):{name:'Bàn '+(S.tables.length+1),area:'Tầng 1',seats:4};
+  show(`<h2>${id?'Sửa bàn':'Thêm bàn'}</h2><div class="f">
+    <label>Tên bàn<input id="t_name" value="${esc(t.name)}"></label>
+    <label>Khu vực<input id="t_area" value="${esc(t.area)}"></label>
+    <label>Số chỗ<input id="t_seats" type="number" min="1" value="${t.seats}"></label></div>
+    <div class="row"><button class="btn g" onclick="closeDlg()">Hủy</button><button class="btn" onclick="saveTable('${id||''}')">Lưu</button></div>`);
+}
+function saveTable(id){
+  const name=$('#t_name').value.trim(),area=$('#t_area').value.trim()||'Tầng 1',seats=Math.max(1,parseInt($('#t_seats').value)||1);
+  if(!name)return alert('Vui lòng nhập tên bàn');
+  if(S.tables.some(x=>x.name.toLowerCase()===name.toLowerCase()&&x.id!==id))return alert('Tên bàn đã tồn tại');
+  if(id)Object.assign(T(id),{name,area,seats});
+  else S.tables.push({id:uid(),name,area,seats,status:'free',guest:'',guests:0,order:[],since:null});
+  save();render();closeDlg();
+}
+function delTable(id){if(!confirm('Xóa bàn này?'))return;S.tables=S.tables.filter(t=>t.id!==id);save();render();closeDlg()}
+
+/* ---------- Menu ---------- */
+function renderMenu(){
+  const q=mSearch.toLowerCase();
+  const list=S.menu.filter(m=>(mCat==='all'||m.cat===mCat)&&m.name.toLowerCase().includes(q));
+  $('#app').innerHTML=`
+  <div class="bar">
+    <input id="ms" placeholder="Tìm món..." value="${esc(mSearch)}" oninput="mSearch=this.value;renderMenuRows()">
+    <select onchange="mCat=this.value;render()"><option value="all">Tất cả nhóm</option>${CATS.map(c=>`<option ${mCat===c?'selected':''}>${c}</option>`).join('')}</select>
+    <button class="btn" style="margin-left:auto" onclick="itemForm()">+ Thêm món</button>
+  </div>
+  <div class="wrap"><table><thead><tr><th>Tên món</th><th>Nhóm</th><th>Giá</th><th>Trạng thái</th><th></th></tr></thead><tbody id="mrows"></tbody></table></div>`;
+  renderMenuRows();
+}
+function renderMenuRows(){
+  const q=mSearch.toLowerCase();
+  const list=S.menu.filter(m=>(mCat==='all'||m.cat===mCat)&&m.name.toLowerCase().includes(q));
+  $('#mrows').innerHTML=list.map(m=>`<tr class="${m.avail?'':'off'}"><td>${esc(m.name)}</td><td>${m.cat}</td><td>${fmt(m.price)}</td>
+    <td><button class="chip" onclick="toggleItem('${m.id}')">${m.avail?'Đang bán':'Hết món'}</button></td>
+    <td style="white-space:nowrap"><button class="btn g s" onclick="itemForm('${m.id}')">Sửa</button> <button class="btn d s" onclick="delItem('${m.id}')">Xóa</button></td></tr>`).join('')||'<tr><td colspan="5" class="mut">Không tìm thấy món.</td></tr>';
+}
+function toggleItem(id){const m=M(id);m.avail=!m.avail;save();renderMenuRows()}
+function delItem(id){if(!confirm('Xóa món này khỏi menu?'))return;S.menu=S.menu.filter(m=>m.id!==id);S.tables.forEach(t=>t.order=t.order.filter(o=>o.id!==id));save();render()}
+function itemForm(id){
+  const m=id?M(id):{name:'',cat:CATS[0],price:0,avail:true};
+  show(`<h2>${id?'Sửa món':'Thêm món'}</h2><div class="f">
+    <label>Tên món<input id="i_name" value="${esc(m.name)}"></label>
+    <label>Nhóm<select id="i_cat">${CATS.map(c=>`<option ${m.cat===c?'selected':''}>${c}</option>`).join('')}</select></label>
+    <label>Giá (VNĐ)<input id="i_price" type="number" min="0" step="1000" value="${m.price}"></label></div>
+    <div class="row"><button class="btn g" onclick="closeDlg()">Hủy</button><button class="btn" onclick="saveItem('${id||''}')">Lưu</button></div>`);
+}
+function saveItem(id){
+  const name=$('#i_name').value.trim(),cat=$('#i_cat').value,price=Math.max(0,parseInt($('#i_price').value)||0);
+  if(!name)return alert('Vui lòng nhập tên món');
+  if(id)Object.assign(M(id),{name,cat,price});else S.menu.push({id:uid(),name,cat,price,avail:true});
+  save();render();closeDlg();
+}
+render();
+</script>
+</body>
+</html>
